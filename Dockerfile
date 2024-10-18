@@ -30,8 +30,8 @@ COPY --from=build /app/WebUser.SRV/out ./WebUser.SRV/
 COPY --from=build /app/WebUser/Photos/ ./Photos/
 
 # Copia los archivos .env y .env.development
-COPY .env.Production .
-COPY .env.Development .
+# COPY .env.Production .
+# COPY .env.Development .
 
 # Expone los puertos para tráfico HTTP
 EXPOSE 5003
