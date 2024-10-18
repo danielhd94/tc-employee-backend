@@ -403,3 +403,10 @@ ASALocalRun/
 
 # Local History for Visual Studio
 .localhistory/
+
+WebUser/Properties/launchSettings.json
+WebUser/appsettings.Development.json
+out/
+
+.env.production
+.env.development

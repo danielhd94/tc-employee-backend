@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  webuser:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5003:5003"
+    env_file:
+      - .env.${ASPNETCORE_ENVIRONMENT}
+    environment:
+      - ConnectionStrings__DefaultConnection=Data Source=${DB_SERVER};Initial Catalog=${DB_NAME};User Id=${DB_USER};Password=${DB_PASSWORD};Encrypt=${ENCRYPT};TrustServerCertificate=${TRUSTCERTIFICATE};Connection Timeout=${CONTIMEOUT}
+      - DatabaseSettings__Schema=${SCHEMA:-dbo}
+    command: >
+      sh -c "
+      echo 'Connection String:' &&
+      echo $${ConnectionStrings__DefaultConnection} &&
+      echo 'Schema:' &&
+      echo $${DatabaseSettings__Schema} &&
+      dotnet WebUser.dll"
+    volumes:
+      - ./WebUser/Photos:/app/Photos
+    networks:
+      - webuser-network
+
+networks:
+  webuser-network:
+    driver: bridge

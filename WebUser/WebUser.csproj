@@ -1,13 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
-
-
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DocumentationFile>bin\Debug\netcoreapp3.1\WebUser.xml</DocumentationFile>
+    <IntermediateOutputPath>obj\Debug\netcoreapp3.1</IntermediateOutputPath>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'WebUser_Production' " />
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
@@ -16,14 +15,22 @@
   <ItemGroup>
     <None Remove="Photos\" />
     <None Remove="Mapper\" />
+    <None Remove="Managers\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Photos\" />
     <Folder Include="Mapper\" />
+    <Folder Include="Managers\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WebUser.SRV\WebUser.SRV.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
+  </ItemGroup>
+  <!-- Incluir el archivo WebUser.xml en la salida -->
+  <ItemGroup>
+    <None Update="WebUser.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

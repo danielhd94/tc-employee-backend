@@ -14,7 +14,6 @@ using Microsoft.OpenApi.Models;
 using WebUser.Mapper;
 using WebUser.SRV;
 using WebUser.SRV.Interfaces;
-using WebUser.SRV.ModelsDTO;
 using WebUser.SRV.Services;
 
 namespace WebUser
@@ -24,6 +23,18 @@ namespace WebUser
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+        }
+
+        private string BuildConnectionString()
+        { 
+            return $"Data Source={Environment.GetEnvironmentVariable("DB_SERVER")};" +
+                   $"Initial Catalog={Environment.GetEnvironmentVariable("DB_NAME")};" +
+                   $"User Id={Environment.GetEnvironmentVariable("DB_USER")};" +
+                   $"Password={Environment.GetEnvironmentVariable("DB_PASSWORD")};" +
+                   $"Encrypt={Environment.GetEnvironmentVariable("ENCRRYPT")};" +
+                   $"TrustServerCertificate={Environment.GetEnvironmentVariable("TRUSTCERTIFICATE")};" +
+                   $"Connection Timeout={Environment.GetEnvironmentVariable("CONTIMEOUT")};";
+
         }
 
         public IConfiguration Configuration { get; }
@@ -37,49 +48,84 @@ namespace WebUser
                 cfg.AddProfile(new AutoMapperConfiguration());
             }).CreateMapper());
 
+            // Imprimir toda la configuración
+            Console.WriteLine("-------- Configuración completa --------");
+            foreach (var c in Configuration.AsEnumerable())
+            {
+                Console.WriteLine($"{c.Key} = {c.Value}");
+            }
+            Console.WriteLine("----------------------------------------");
+
+
             // Configuración del DbContext
             services.AddDbContext<MyDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("EmployeeAppCon")));
+            {
+                // Configurar el DbContext con la cadena de conexión
+                var connectionString = BuildConnectionString(); // Configuration.GetConnectionString("DefaultConnection");
+                if (string.IsNullOrEmpty(connectionString))
+                {
+                    throw new ArgumentNullException("connectionString", "La cadena de conexión no puede ser nula o vacía.");
+                }
 
+                options.UseSqlServer(connectionString, sqlOptions =>
+                    sqlOptions.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName));
+            });
+
+            // Configuración de servicios
             services.AddTransient<IDepartmentService, DepartmentService>();
             services.AddTransient<IEmployeeService, EmployeeService>();
 
-            //Enable CORS
-            services.AddCors( c =>
+            // Enable CORS
+            services.AddCors(c =>
             {
-                c.AddPolicy("AllowOrigin", options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+                c.AddPolicy("AllowOrigin", builder =>
+                {
+                    builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                });
             });
 
-            //services.AddControllers();
+            // Configuración de controladores
             services.AddControllers()
-            .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
+                .AddJsonOptions(options =>
+                    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
 
-
-            //Add Swagger documentation
+            // Add Swagger documentation
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
-                { Title = "API REST", Version = "v1", Description = "Employee's documentatión services" });
+                {
+                    Title = "API REST",
+                    Version = "v1",
+                    Description = "Employee's documentation services"
+                });
+
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                c.IncludeXmlComments(xmlPath);
+                if (File.Exists(xmlPath))
+                {
+                    c.IncludeXmlComments(xmlPath);
+                }
+                else
+                {
+                    Console.WriteLine($"Warning: XML file not found at {xmlPath}");
+                }
             });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            //Habilitar swagger
+            // Habilitar Swagger
             app.UseSwagger();
 
-            //indica la ruta para generar la configuración de swagger
+            // Indica la ruta para generar la configuración de Swagger
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint(Configuration["Documentation"], "API REST");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "API REST v1");
             });
 
-            //Enable CORS
-            app.UseCors(options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            // Enable CORS
+            app.UseCors("AllowOrigin");
 
             if (env.IsDevelopment())
             {
@@ -95,6 +141,7 @@ namespace WebUser
                 endpoints.MapControllers();
             });
 
+            // Configuración de archivos estáticos
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(
@@ -104,4 +151,3 @@ namespace WebUser
         }
     }
 }
-

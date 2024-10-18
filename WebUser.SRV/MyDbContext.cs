@@ -1,14 +1,18 @@
 ﻿using System.Reflection;
 using System.Reflection.Metadata;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using WebUser.SRV.ModelsDTO;
 
 namespace WebUser.SRV
 {
     public class MyDbContext : DbContext
     {
-        public MyDbContext(DbContextOptions<MyDbContext> options) : base(options)
+        private readonly string _schema;
+
+        public MyDbContext(DbContextOptions<MyDbContext> options, IConfiguration configuration) : base(options)
         {
+            _schema = configuration["DatabaseSettings:Schema"];
         }
 
         // Define las propiedades DbSet para las entidades que deseas mapear a la base de datos
@@ -18,7 +22,9 @@ namespace WebUser.SRV
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.HasDefaultSchema("danapp"); // Especifica el esquema predeterminado
+            // Especifica el esquema leído de la configuración
+         
+            modelBuilder.HasDefaultSchema(_schema);
 
             // Configuraciones adicionales del modelo si es necesario
 
