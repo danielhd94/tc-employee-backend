@@ -12,12 +12,14 @@ RUN dotnet restore "WebUser.SRV/WebUser.SRV.csproj"
 COPY . .
 
 # Compila y publica la aplicación
+# En la etapa de compilación (build)
 RUN dotnet publish "WebUser/WebUser.csproj" -c Release -o /app/publish
 
-# Etapa final
+# En la etapa final
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.1 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
+COPY --from=build /src/WebUser/bin/Release/netcoreapp3.1/WebUser.xml .
 
 # Crea un directorio para las fotos
 RUN mkdir -p ./Photos
