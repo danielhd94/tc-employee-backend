@@ -8,6 +8,8 @@ namespace WebUser.SRV.ModelsDTO
     {
         public int EmployeeId { get; set; }
 
+        public string EmployeeCode { get; set; }
+
         public string EmployeeName { get; set; }
 
         public DateTime DateOfJoining { get; set; }
@@ -17,6 +19,10 @@ namespace WebUser.SRV.ModelsDTO
         public DepartmentDTO Department { get; set; }
 
         public GenderDTO Gender { get; set; }
+
+        public decimal Rate { get; set; }
+
+        public decimal OvertimeRate { get; set; }
 
     }
 

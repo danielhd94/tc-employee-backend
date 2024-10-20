@@ -11,6 +11,10 @@ namespace WebUser.SRV.ModelsDTO
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int EmployeeId { get; set; }
 
+        [Required(ErrorMessage = "EmployeeCode is required.")]
+        [MaxLength(50)]
+        public string EmployeeCode { get; set; }
+
         [Required(ErrorMessage = "EmployeeName is required.")]
         public string EmployeeName { get; set; }
 
@@ -28,6 +32,14 @@ namespace WebUser.SRV.ModelsDTO
         [ForeignKey("GenderId")]
         public int GenderId { get; set; }
         public Gender Gender { get; set; }
+
+        [Required(ErrorMessage = "Rate is required.")]
+        [Column(TypeName = "decimal(10, 2)")]
+        public decimal Rate { get; set; }
+
+        [Required(ErrorMessage = "Overtime rate is required.")]
+        [Column(TypeName = "decimal(10, 2)")]
+        public decimal OvertimeRate { get; set; }
     }
 
 

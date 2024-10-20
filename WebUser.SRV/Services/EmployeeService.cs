@@ -145,9 +145,13 @@ namespace WebUser.SRV.Services
                     return TResponse<EmployeeDTO>.Create(false, null, "Invalid employee data.");
                 }
 
+                // Generar un código de empleado único
+                string employeeCode = await GenerateUniqueEmployeeCodeAsync();
+
                 // Mapea el objeto DTO a la entidad Employee
                 var newEmployeeEntity = new Employee
                 {
+                    EmployeeCode = employeeCode,
                     EmployeeName = employeeDTO.EmployeeName,
                     DateOfJoining = employeeDTO.DateOfJoining,
                     PhotoFileName = employeeDTO.PhotoFileName,
@@ -305,6 +309,23 @@ namespace WebUser.SRV.Services
                 string detailedMessage = $"Error: {ex.Message}\nStackTrace: {ex.StackTrace}";
                 return TResponse<IEnumerable<GenderCountDTO>>.Create(false, null, detailedMessage);
             }
+        }
+
+        // Método para generar el código de empleado
+        private async Task<string> GenerateUniqueEmployeeCodeAsync()
+        {
+            Random random = new Random();
+            string employeeCode;
+
+            do
+            {
+                int randomSuffix = random.Next(10, 100); // Genera un número entre 10 y 99
+                employeeCode = $"20017{randomSuffix}";
+
+                // Verifica si el código ya existe en la base de datos
+            } while (await _dbContext.Employees.AnyAsync(e => e.EmployeeCode == employeeCode));
+
+            return employeeCode;
         }
     }
 }
