@@ -3,8 +3,8 @@ using WebUser.SRV.Models;
 
 namespace WebUser.SRV.ModelsDTO
 {
-	public class EmployeeTimeDTO
-	{
+    public class EmployeeTimeDTO
+    {
         public int EmployeeTimeId { get; set; }  // Identificador único del registro de horas del empleado
 
         public int EmployeeId { get; set; }  // Identificador del empleado
@@ -15,21 +15,17 @@ namespace WebUser.SRV.ModelsDTO
 
         public DateTime? ExitTime { get; set; }  // Hora de salida
 
-        public int? OvertimeHours { get; set; }  // Horas extra trabajadas
-
-        public int? SickLeaveHours { get; set; }  // Horas de enfermedad
-
-        public int? VacationHours { get; set; }  // Horas de vacaciones
-
-        public int? HolidayHours { get; set; }  // Horas de días festivos
-
-        public int? OtherHours { get; set; }  // Otras horas
+        public decimal? OvertimeHours { get; set; }  // Cambiado a decimal
+        public decimal? SickLeaveHours { get; set; }  // Cambiado a decimal
+        public decimal? VacationHours { get; set; }  // Cambiado a decimal
+        public decimal? HolidayHours { get; set; }  // Cambiado a decimal
+        public decimal? OtherHours { get; set; }  // Cambiado a decimal
 
         public DateTime CreatedAt { get; set; }  // Fecha y hora de creación del registro
 
         public DateTime UpdatedAt { get; set; }  // Fecha y hora de la última actualización
 
-        public string  EmployeeName { get; set; }
+        public string EmployeeName { get; set; }
 
         public string EmployeeCode { get; set; }
     }

@@ -25,78 +25,89 @@ namespace WebUser
             Configuration = configuration;
         }
 
-        private string BuildConnectionString()
-        { 
-            return $"Data Source={Environment.GetEnvironmentVariable("DB_SERVER")};" +
-                   $"Initial Catalog={Environment.GetEnvironmentVariable("DB_NAME")};" +
-                   $"User Id={Environment.GetEnvironmentVariable("DB_USER")};" +
-                   $"Password={Environment.GetEnvironmentVariable("DB_PASSWORD")};" +
-                   $"Encrypt={Environment.GetEnvironmentVariable("ENCRRYPT")};" +
-                   $"TrustServerCertificate={Environment.GetEnvironmentVariable("TRUSTCERTIFICATE")};" +
-                   $"Connection Timeout={Environment.GetEnvironmentVariable("CONTIMEOUT")};";
-
-        }
-
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // Auto Mapper Configurations
-            services.AddSingleton(provider => new MapperConfiguration(cfg =>
-            {
-                cfg.AddProfile(new AutoMapperConfiguration());
-            }).CreateMapper());
+            // Configurar AutoMapper
+            services.AddAutoMapper(typeof(AutoMapperConfiguration));
 
-            // Imprimir toda la configuración
+            // Imprimir configuración
+            PrintConfiguration();
+
+            // Configurar DbContext
+            ConfigureDbContext(services);
+
+            // Configurar servicios
+            ConfigureMyServices(services);
+
+            // Configurar CORS
+            ConfigureCors(services);
+
+            // Configurar controladores
+            services.AddControllers()
+                .AddJsonOptions(options =>
+                    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
+
+            // Configurar Swagger
+            ConfigureSwagger(services);
+        }
+
+        private void PrintConfiguration()
+        {
             Console.WriteLine("-------- Configuración completa --------");
             foreach (var c in Configuration.AsEnumerable())
             {
                 Console.WriteLine($"{c.Key} = {c.Value}");
             }
             Console.WriteLine("----------------------------------------");
+        }
 
+        private void ConfigureDbContext(IServiceCollection services)
+        {
+            var connectionString = BuildConnectionString();
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                throw new ArgumentNullException("connectionString", "La cadena de conexión no puede ser nula o vacía.");
+            }
 
-            // Configuración del DbContext
             services.AddDbContext<MyDbContext>(options =>
             {
-                // Configurar el DbContext con la cadena de conexión
-                var connectionString = BuildConnectionString(); // Configuration.GetConnectionString("DefaultConnection");
-                if (string.IsNullOrEmpty(connectionString))
-                {
-                    throw new ArgumentNullException("connectionString", "La cadena de conexión no puede ser nula o vacía.");
-                }
-
                 options.UseSqlServer(connectionString, sqlOptions =>
                     sqlOptions.MigrationsAssembly(Assembly.GetExecutingAssembly().FullName));
             });
+        }
 
-            // Configuración de servicios
+        private void ConfigureMyServices(IServiceCollection services)
+        {
             services.AddTransient<IDepartmentService, DepartmentService>();
             services.AddTransient<IEmployeeService, EmployeeService>();
+            services.AddTransient<IEmployeeTimeService, EmployeeTimeService>();
+        }
 
-            // Enable CORS
-            services.AddCors(c =>
+        private void ConfigureCors(IServiceCollection services)
+        {
+            services.AddCors(options =>
             {
-                c.AddPolicy("AllowOrigin", builder =>
-                {
-                    builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
-                });
+                options.AddPolicy("AllowFrontend",
+                    builder =>
+                    {
+                        builder.AllowAnyOrigin()
+                               .AllowAnyHeader()
+                               .AllowAnyMethod();
+                    });
             });
+        }
 
-            // Configuración de controladores
-            services.AddControllers()
-                .AddJsonOptions(options =>
-                    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
-
-            // Add Swagger documentation
+        private void ConfigureSwagger(IServiceCollection services)
+        {
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "API REST",
                     Version = "v1",
-                    Description = "Employee's documentation services"
+                    Description = "Documentación de servicios de empleados"
                 });
 
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -112,20 +123,26 @@ namespace WebUser
             });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        private string BuildConnectionString()
+        {
+            return $"Data Source={Configuration["DB_SERVER"]};" +
+                   $"Initial Catalog={Configuration["DB_NAME"]};" +
+                   $"User Id={Configuration["DB_USER"]};" +
+                   $"Password={Configuration["DB_PASSWORD"]};" +
+                   $"Encrypt={Configuration["ENCRRYPT"]};" +
+                   $"TrustServerCertificate={Configuration["TRUSTCERTIFICATE"]};" +
+                   $"Connection Timeout={Configuration["CONTIMEOUT"]};";
+        }
+
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            // Habilitar Swagger
             app.UseSwagger();
-
-            // Indica la ruta para generar la configuración de Swagger
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "API REST v1");
             });
 
-            // Enable CORS
-            app.UseCors("AllowOrigin");
+            app.UseCors("AllowFrontend");
 
             if (env.IsDevelopment())
             {
@@ -133,7 +150,6 @@ namespace WebUser
             }
 
             app.UseRouting();
-
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

@@ -4,8 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebUser.SRV.Models
 {
-	public class EmployeeTime
-	{
+    public class EmployeeTime
+    {
         [Key]
         public int EmployeeTimeId { get; set; }
 
@@ -19,15 +19,15 @@ namespace WebUser.SRV.Models
 
         public DateTime? ExitTime { get; set; }
 
-        public int? OvertimeHours { get; set; }
+        public decimal? OvertimeHours { get; set; }
 
-        public int? SickLeaveHours { get; set; }
+        public decimal? SickLeaveHours { get; set; }
 
-        public int? VacationHours { get; set; }
+        public decimal? VacationHours { get; set; }
 
-        public int? HolidayHours { get; set; }
+        public decimal? HolidayHours { get; set; }
 
-        public int? OtherHours { get; set; }
+        public decimal? OtherHours { get; set; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public DateTime CreatedAt { get; set; } = DateTime.Now;

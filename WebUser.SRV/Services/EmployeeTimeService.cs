@@ -12,7 +12,7 @@ using Azure;
 
 namespace WebUser.SRV.Services
 {
-	public class EmployeeTimeService : IEmployeeTimeService
+    public class EmployeeTimeService : IEmployeeTimeService
     {
         private readonly MyDbContext _dbContext;
         private readonly IMapper _mapper;
@@ -27,48 +27,70 @@ namespace WebUser.SRV.Services
         {
             try
             {
-                // Mapeo de DTO a entidad
-                var employeeTimes = timeRecords.Select(record => new EmployeeTime
+                var savedRecordsDTO = new List<EmployeeTimeDTO>();
+
+                foreach (var record in timeRecords)
                 {
-                    EmployeeId = record.EmployeeId,
-                    Date = record.Date,
-                    EntryTime = record.EntryTime,
-                    ExitTime = record.ExitTime,
-                    OvertimeHours = record.OvertimeHours,
-                    SickLeaveHours = record.SickLeaveHours,
-                    VacationHours = record.VacationHours,
-                    HolidayHours = record.HolidayHours,
-                    OtherHours = record.OtherHours
-                });
+                    // Buscar si el registro ya existe
+                    var existingRecord = await _dbContext.EmployeeTimes
+                        .FirstOrDefaultAsync(et => et.EmployeeId == record.EmployeeId && et.Date.Date == record.Date.Date);
 
-                // Agregar los registros al DbContext
-                await _dbContext.EmployeeTimes.AddRangeAsync(employeeTimes);
+                    if (existingRecord != null)
+                    {
+                        // Si el registro existe, actualizarlo
+                        existingRecord.EntryTime = record.EntryTime;
+                        existingRecord.ExitTime = record.ExitTime;
+                        existingRecord.OvertimeHours = record.OvertimeHours;
+                        existingRecord.SickLeaveHours = record.SickLeaveHours;
+                        existingRecord.VacationHours = record.VacationHours;
+                        existingRecord.HolidayHours = record.HolidayHours;
+                        existingRecord.OtherHours = record.OtherHours;
 
-                // Guardar cambios en la base de datos
+                        // No agregar el registro de nuevo, solo guardamos cambios
+                    }
+                    else
+                    {
+                        // Si no existe, crear una nueva entidad
+                        var newEmployeeTime = new EmployeeTime
+                        {
+                            EmployeeId = record.EmployeeId,
+                            Date = record.Date,
+                            EntryTime = record.EntryTime,
+                            ExitTime = record.ExitTime,
+                            OvertimeHours = record.OvertimeHours,
+                            SickLeaveHours = record.SickLeaveHours,
+                            VacationHours = record.VacationHours,
+                            HolidayHours = record.HolidayHours,
+                            OtherHours = record.OtherHours
+                        };
+
+                        // Agregar la nueva entidad
+                        await _dbContext.EmployeeTimes.AddAsync(newEmployeeTime);
+                        savedRecordsDTO.Add(new EmployeeTimeDTO
+                        {
+                            EmployeeId = newEmployeeTime.EmployeeId,
+                            Date = newEmployeeTime.Date,
+                            EntryTime = newEmployeeTime.EntryTime,
+                            ExitTime = newEmployeeTime.ExitTime,
+                            OvertimeHours = newEmployeeTime.OvertimeHours,
+                            SickLeaveHours = newEmployeeTime.SickLeaveHours,
+                            VacationHours = newEmployeeTime.VacationHours,
+                            HolidayHours = newEmployeeTime.HolidayHours,
+                            OtherHours = newEmployeeTime.OtherHours
+                        });
+                    }
+                }
+
+                // Guardar todos los cambios en la base de datos
                 await _dbContext.SaveChangesAsync();
 
-                // Mapear las entidades guardadas de vuelta a DTOs
-                var savedRecordsDTO = employeeTimes.Select(et => new EmployeeTimeDTO
-                {
-                    EmployeeId = et.EmployeeId,
-                    Date = et.Date,
-                    EntryTime = et.EntryTime,
-                    ExitTime = et.ExitTime,
-                    OvertimeHours = et.OvertimeHours,
-                    SickLeaveHours = et.SickLeaveHours,
-                    VacationHours = et.VacationHours,
-                    HolidayHours = et.HolidayHours,
-                    OtherHours = et.OtherHours
-                }).ToList();
-
-                return TResponse<IEnumerable<EmployeeTimeDTO>>.Create(true, savedRecordsDTO, "Records added successfully.");
+                return TResponse<IEnumerable<EmployeeTimeDTO>>.Create(true, savedRecordsDTO, "Records processed successfully.");
             }
             catch (Exception ex)
             {
                 return TResponse<IEnumerable<EmployeeTimeDTO>>.Create(false, null, $"Error: {ex.Message}");
             }
         }
-
 
 
         public async Task<TResponse<IEnumerable<EmployeeTimeDTO>>> GetEmployeeTimesAsync()

@@ -12,8 +12,6 @@ namespace WebUser
     {
         public static void Main(string[] args)
         {
-            WebUserManager userManager = new WebUserManager();
-            //userManager.EnsureFileExists();
             CreateHostBuilder(args).Build().Run();
         }
 

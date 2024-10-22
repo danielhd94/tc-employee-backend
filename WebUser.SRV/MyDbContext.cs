@@ -23,8 +23,31 @@ namespace WebUser.SRV
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<EmployeeTime>(entity =>
+            {
+                entity.Property(e => e.HolidayHours)
+                      .HasColumnType("decimal(18, 2)") // Especifica tipo de columna
+                      .IsRequired(false); // Cambia según tus necesidades
+
+                entity.Property(e => e.OtherHours)
+                      .HasColumnType("decimal(18, 2)") // Especifica tipo de columna
+                      .IsRequired(false); // Cambia según tus necesidades
+
+                entity.Property(e => e.OvertimeHours)
+                      .HasColumnType("decimal(18, 2)") // Especifica tipo de columna
+                      .IsRequired(false); // Cambia según tus necesidades
+
+                entity.Property(e => e.SickLeaveHours)
+                      .HasColumnType("decimal(18, 2)") // Especifica tipo de columna
+                      .IsRequired(false); // Cambia según tus necesidades
+
+                entity.Property(e => e.VacationHours)
+                      .HasColumnType("decimal(18, 2)") // Especifica tipo de columna
+                      .IsRequired(false); // Cambia según tus necesidades
+            });
+
             // Especifica el esquema leído de la configuración
-         
+
             modelBuilder.HasDefaultSchema(_schema);
 
             // Configuraciones adicionales del modelo si es necesario
