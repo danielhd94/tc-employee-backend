@@ -15,6 +15,7 @@ namespace WebUser.SRV.Interfaces
         Task<TResponse<string>> DeleteEmployeeAsync(int id);
         Task<TResponse<string>> SaveFile(IFormFile file);
         Task<TResponse<IEnumerable<GenderCountDTO>>> GetGenderCountAsync();
+        Task<TResponse<IEnumerable<EmployeeWithTimesDTO>>> GetEmployeesWithTimesAsync();
     }
 }
 

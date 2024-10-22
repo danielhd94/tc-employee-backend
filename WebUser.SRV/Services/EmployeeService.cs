@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using WebUser.SRV.Interfaces;
 using WebUser.SRV.ModelsDTO;
+using WebUser.SRV.Models;
 using WebUser.SRV.Response;
 using static System.Collections.Specialized.BitVector32;
 
@@ -77,6 +78,38 @@ namespace WebUser.SRV.Services
             {
                 string detailedMessage = $"Error: {ex.Message}\nStackTrace: {ex.StackTrace}";
                 return TResponse<EmployeeDTO>.Create(false, null, detailedMessage);
+            }
+        }
+
+        public async Task<TResponse<IEnumerable<EmployeeWithTimesDTO>>> GetEmployeesWithTimesAsync()
+        {
+            try
+            {
+                var employees = await _dbContext.Employees
+                    .Include(e => e.Department)
+                    .Include(e => e.Gender)
+                    .ToListAsync();
+
+                var times = await _dbContext.EmployeeTimes
+                    .Include(et => et.Employee)
+                    .ToListAsync();
+
+                var employeeDTOs = employees.Select(employee => _mapper.Map<EmployeeDTO>(employee)).ToList();
+                var timesDTOs = times.Select(time => _mapper.Map<EmployeeTimeDTO>(time)).ToList();
+
+                // Combinar empleados y tiempos
+                var result = employeeDTOs.Select(employee => new EmployeeWithTimesDTO
+                {
+                    Employee = employee,
+                    Times = timesDTOs.Where(t => t.EmployeeId == employee.EmployeeId).ToList() // Filtrar los tiempos para el empleado
+                });
+
+                return TResponse<IEnumerable<EmployeeWithTimesDTO>>.Create(true, result, "Employees with times retrieved successfully.");
+            }
+            catch (Exception ex)
+            {
+                string detailedMessage = $"Error: {ex.Message}\nStackTrace: {ex.StackTrace}";
+                return TResponse<IEnumerable<EmployeeWithTimesDTO>>.Create(false, null, detailedMessage);
             }
         }
 

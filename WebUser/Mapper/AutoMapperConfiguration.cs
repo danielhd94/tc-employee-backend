@@ -2,6 +2,7 @@
 using System.Reflection;
 using AutoMapper;
 using WebUser.SRV.ModelsDTO;
+using WebUser.SRV.Models;
 
 namespace WebUser.Mapper
 {
@@ -9,8 +10,6 @@ namespace WebUser.Mapper
 	{
 		public AutoMapperConfiguration()
 		{
-            //CreateMap<Employee, EmployeeDTO>().ReverseMap();
-            //CreateMap<EmployeeDTO, Employee>().ReverseMap();
 
             // Perfil para mapear Employee a EmployeeDTO
             CreateMap<Employee, EmployeeDTO>()
@@ -19,6 +18,11 @@ namespace WebUser.Mapper
 
             CreateMap<Department, DepartmentDTO>().ReverseMap();
             CreateMap<Gender, GenderDTO>().ReverseMap();
+            CreateMap<EmployeeTime, EmployeeTimeDTO>()
+            .ForMember(dest => dest.EmployeeId, opt => opt.MapFrom(src => src.Employee.EmployeeId))
+            .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src => src.Employee.EmployeeName))
+            .ForMember(dest => dest.EmployeeCode, opt => opt.MapFrom(src => src.Employee.EmployeeCode))
+            .ReverseMap();
         }
 	}
 }

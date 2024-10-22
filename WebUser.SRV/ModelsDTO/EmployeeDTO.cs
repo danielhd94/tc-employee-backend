@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using WebUser.SRV.Models;
 
 namespace WebUser.SRV.ModelsDTO
 {
@@ -23,6 +24,8 @@ namespace WebUser.SRV.ModelsDTO
         public decimal Rate { get; set; }
 
         public decimal OvertimeRate { get; set; }
+
+        public EmployeeTimeDTO? EmployeeTime { get; set; }
 
     }
 

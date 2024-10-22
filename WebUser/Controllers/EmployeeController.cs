@@ -41,6 +41,19 @@ namespace WebUser.Controllers
             return NotFound(response.Message);
         }
 
+        [HttpGet("with-times")]
+        public async Task<IActionResult> GetEmployeesWithTimes()
+        {
+            var response = await _employeeService.GetEmployeesWithTimesAsync();
+
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+
+            return StatusCode(500, response);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Post(EmployeeDTO emp)
         {

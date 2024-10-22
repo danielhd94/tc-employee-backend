@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using WebUser.SRV.Interfaces;
 using WebUser.SRV.ModelsDTO;
+using WebUser.SRV.Models;
 using WebUser.SRV.Response;
 
 namespace WebUser.SRV.Services

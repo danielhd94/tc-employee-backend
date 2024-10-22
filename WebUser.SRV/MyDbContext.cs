@@ -2,7 +2,7 @@
 using System.Reflection.Metadata;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using WebUser.SRV.ModelsDTO;
+using WebUser.SRV.Models;
 
 namespace WebUser.SRV
 {
@@ -19,6 +19,7 @@ namespace WebUser.SRV
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<Gender> Genders { get; set; }
+        public DbSet<EmployeeTime> EmployeeTimes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
